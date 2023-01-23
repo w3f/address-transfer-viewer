@@ -55,7 +55,7 @@ def get_transactions(addr):
 
         if rj['data']['transfers'] is None:
             break
-    
+        
         num_on_page = len(rj['data']['transfers'])
 
         if num_on_page == 0:
@@ -70,11 +70,12 @@ def get_transactions(addr):
 
             from_addr = rj['data']['transfers'][j]['from']
             to_addr = rj['data']['transfers'][j]['to']
-        
-            if (to_addr == ADDRESS):
+            
+            if (to_addr == addr):
                 in_list.append(from_addr)
             else:
                 out_list.append(to_addr)
+
 
         # Clean up
         # Remove any duplicates
@@ -128,16 +129,12 @@ for i in range(1, DEGREE):
     new_in_list = []
     new_out_list = []
 
-    # print("In list:")
     for addr in in_list:
         tr = get_transactions(addr)[0]
-        # print(str(addr) + " : " + str(tr))
         new_in_list.extend(tr)
 
-    # print("Out list:")
     for addr in out_list:
         tr = get_transactions(addr)[1]
-        # print(str(addr) + " : " + str(tr))
         new_out_list.extend(tr)
         
     print_transfers(new_in_list, new_out_list, (i + 1))
