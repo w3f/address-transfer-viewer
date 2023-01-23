@@ -75,7 +75,18 @@ def get_transactions(addr):
                 in_list.append(from_addr)
             else:
                 out_list.append(to_addr)
-    return N.unique(in_list), N.unique(out_list)
+
+        # Clean up
+        # Remove any duplicates
+        in_list = N.unique(in_list).tolist()
+        out_list = N.unique(out_list).tolist()
+        # If same address is in list, remove it
+        if addr in in_list:
+            in_list.remove(addr)
+        if addr in out_list:
+            out_list.remove(addr)
+            
+    return in_list, out_list
         
 
 # EXECUTION STARTS HERE
@@ -107,6 +118,7 @@ else:
 in_list, out_list = get_transactions(ADDRESS)
 
 print_transfers(in_list, out_list, 1)
+print()
 
 # If order > 0, start following only inputs on input path,
 # only outputs on output path
@@ -115,14 +127,21 @@ for i in range(1, ORDER):
 
     new_in_list = []
     new_out_list = []
-    
+
+    print("In list:")
     for addr in in_list:
-        new_in_list.extend(get_transactions(addr)[0])
-        
+        tr = get_transactions(addr)[0]
+        print(str(addr) + " : " + str(tr))
+        new_in_list.extend(tr)
+
+    print("Out list:")
     for addr in out_list:
-        new_out_list.extend(get_transactions(addr)[1])
+        tr = get_transactions(addr)[1]
+        print(str(addr) + " : " + str(tr))
+        new_out_list.extend(tr)
         
     print_transfers(new_in_list, new_out_list, (i + 1))
+    print()
     
     in_list = N.unique(new_in_list)
     out_list = N.unique(new_out_list)
