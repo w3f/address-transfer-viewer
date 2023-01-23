@@ -8,7 +8,7 @@ import numpy as N
 
 
 ADDRESS = ""
-ORDER = ""
+DEGREE = ""
 API_KEY = ""
 NUM_ITEMS_PER_PAGE = 25
 MAX_PAGES = 10
@@ -19,9 +19,9 @@ def print_list(l):
         print(item)
 
 def print_transfers(in_list, out_list, order):
-    print("INCOMING TRANSFERS (ORDER " + str(order) + ")")
+    print("INCOMING TRANSFERS (DEGREE " + str(order) + ")")
     print_list(N.unique(in_list))
-    print("OUTGOING TRANSFERS (ORDER " + str(order) + ")")
+    print("OUTGOING TRANSFERS (DEGREE " + str(order) + ")")
     print_list(N.unique(out_list))
 
         
@@ -58,7 +58,7 @@ def get_transactions(addr):
     
         num_on_page = len(rj['data']['transfers'])
 
-        if  num_on_page == 0:
+        if num_on_page == 0:
             break
 
         # print("Num on page = " + str(num_on_page))
@@ -94,25 +94,25 @@ def get_transactions(addr):
 # All arguments are mandatory.
 
 # Arguments:
-# 1: Address - address to examine
+# 1: API Key - Your subscan API key. See https://support.subscan.io/#introduction
 # 2: Order - number of iterations (e.g. 1 = addresses that this address has transferred to, 2 = addresses that THOSE addresses have transferred to, etc.)
-# 3: API Key - Your subscan API key. See https://support.subscan.io/#introduction
+# 3: Address - address to examine
 
 
 # Read in args from command line
 
 ARGS_LEN = len(sys.argv)
 if ARGS_LEN < 3:
-    print("Usage: python viewer.py ADDRESS ORDER API_KEY")
-    print("ADDRESS - Polkadot address to examine")
-    print("ORDER - Number of iterations to check against")
+    print("Usage: python viewer.py ADDRESS DEGREE API_KEY")
     print("API Key - Your subscan API key. See https://support.subscan.io/")
+    print("DEGREE - Number of iterations to check against")
+    print("ADDRESS - Polkadot address to examine")
+
     sys.exit(1)
 else:
-    ADDRESS = sys.argv[1]
-    ORDER = int(sys.argv[2])
-    API_KEY = sys.argv[3]
-
+    API_KEY = sys.argv[1]
+    DEGREE = int(sys.argv[2])
+    ADDRESS = sys.argv[3]
 
 # Get initial list (input and output)
 in_list, out_list = get_transactions(ADDRESS)
@@ -123,21 +123,21 @@ print()
 # If order > 0, start following only inputs on input path,
 # only outputs on output path
 
-for i in range(1, ORDER):
+for i in range(1, DEGREE):
 
     new_in_list = []
     new_out_list = []
 
-    print("In list:")
+    # print("In list:")
     for addr in in_list:
         tr = get_transactions(addr)[0]
-        print(str(addr) + " : " + str(tr))
+        # print(str(addr) + " : " + str(tr))
         new_in_list.extend(tr)
 
-    print("Out list:")
+    # print("Out list:")
     for addr in out_list:
         tr = get_transactions(addr)[1]
-        print(str(addr) + " : " + str(tr))
+        # print(str(addr) + " : " + str(tr))
         new_out_list.extend(tr)
         
     print_transfers(new_in_list, new_out_list, (i + 1))
