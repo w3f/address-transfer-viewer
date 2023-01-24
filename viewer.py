@@ -13,16 +13,19 @@ API_KEY = ""
 NUM_ITEMS_PER_PAGE = 25
 MAX_PAGES = 10
 
+ACCEPTABLE_DIRECTIONS = ["input", "output", "both"]
 
 def print_list(l):
     for item in l:
         print(item)
 
 def print_transfers(in_list, out_list, order):
-    print("INCOMING TRANSFERS (DEGREE " + str(order) + ")")
-    print_list(N.unique(in_list))
-    print("OUTGOING TRANSFERS (DEGREE " + str(order) + ")")
-    print_list(N.unique(out_list))
+    if DIRECTION == "both" or DIRECTION == "input":
+        print("INCOMING TRANSFERS (DEGREE " + str(order) + ")")
+        print_list(N.unique(in_list))
+    if DIRECTION == "both" or DIRECTION == "output":
+        print("OUTGOING TRANSFERS (DEGREE " + str(order) + ")")
+        print_list(N.unique(out_list))
 
         
 # Returns a tuple - first element is incoming transfers, 2nd is outgoing
@@ -97,23 +100,29 @@ def get_transactions(addr):
 # Arguments:
 # 1: API Key - Your subscan API key. See https://support.subscan.io/#introduction
 # 2: Order - number of iterations (e.g. 1 = addresses that this address has transferred to, 2 = addresses that THOSE addresses have transferred to, etc.)
-# 3: Address - address to examine
+# 3: input/output/both - "input" for all transfers TO, "output" for all transfers FROM, "both" for both transfers TO and FROM
+# 4: Address - address to examine
 
 
 # Read in args from command line
 
 ARGS_LEN = len(sys.argv)
-if ARGS_LEN < 4:
+if ARGS_LEN < 5:
     print("Usage: python viewer.py ADDRESS DEGREE API_KEY")
     print("API Key - Your subscan API key. See https://support.subscan.io/")
     print("DEGREE - Number of iterations to check against")
+    print("DIRECTION - options are 'input', 'output', or 'both'")
     print("ADDRESS - Polkadot address to examine")
 
     sys.exit(1)
 else:
     API_KEY = sys.argv[1]
     DEGREE = int(sys.argv[2])
-    ADDRESS = sys.argv[3]
+    DIRECTION = sys.argv[3].lower()
+    if DIRECTION not in ACCEPTABLE_DIRECTIONS:
+        print("DIRECTION must be one of " + str(ACCEPTABLE_DIRECTIONS))
+        sys.exit(1)
+    ADDRESS = sys.argv[4]
 
 # Get initial list (input and output)
 in_list, out_list = get_transactions(ADDRESS)
@@ -129,19 +138,22 @@ for i in range(1, DEGREE):
     new_in_list = []
     new_out_list = []
 
-    print("Incoming")
-    
-    for addr in in_list:
-        tr = get_transactions(addr)[0]
-        print(addr + " -> " + str(tr))
-        new_in_list.extend(tr)
+    if DIRECTION == "both" or DIRECTION == "input":
 
-    print("Outgoing")
+        print("INCOMING TRANSFERS (DEGREE " + str(i + 1) + ")")
+            
+        for addr in in_list:
+            tr = get_transactions(addr)[0]
+            print(addr + " -> " + str(tr))
+            new_in_list.extend(tr)
+            
+    if DIRECTION == "both" or DIRECTION == "output":
+        print("OUTGOING TRANSFERS (DEGREE " + str(i + 1) + ")")
         
-    for addr in out_list:
-        tr = get_transactions(addr)[1]
-        print(addr + " -> " + str(tr))
-        new_out_list.extend(tr)
+        for addr in out_list:
+            tr = get_transactions(addr)[1]
+            print(addr + " -> " + str(tr))
+            new_out_list.extend(tr)
         
     # print_transfers(new_in_list, new_out_list, (i + 1))
     print()
