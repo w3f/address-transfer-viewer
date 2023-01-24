@@ -103,7 +103,7 @@ def get_transactions(addr):
 # Read in args from command line
 
 ARGS_LEN = len(sys.argv)
-if ARGS_LEN < 3:
+if ARGS_LEN < 4:
     print("Usage: python viewer.py ADDRESS DEGREE API_KEY")
     print("API Key - Your subscan API key. See https://support.subscan.io/")
     print("DEGREE - Number of iterations to check against")
@@ -121,7 +121,7 @@ in_list, out_list = get_transactions(ADDRESS)
 print_transfers(in_list, out_list, 1)
 print()
 
-# If order > 0, start following only inputs on input path,
+# If degree > 0, start following only inputs on input path,
 # only outputs on output path
 
 for i in range(1, DEGREE):
@@ -129,15 +129,21 @@ for i in range(1, DEGREE):
     new_in_list = []
     new_out_list = []
 
+    print("Incoming")
+    
     for addr in in_list:
         tr = get_transactions(addr)[0]
+        print(addr + " -> " + str(tr))
         new_in_list.extend(tr)
 
+    print("Outgoing")
+        
     for addr in out_list:
         tr = get_transactions(addr)[1]
+        print(addr + " -> " + str(tr))
         new_out_list.extend(tr)
         
-    print_transfers(new_in_list, new_out_list, (i + 1))
+    # print_transfers(new_in_list, new_out_list, (i + 1))
     print()
     
     in_list = N.unique(new_in_list)
